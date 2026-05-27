@@ -35,6 +35,9 @@ export const metadata: Metadata = {
     description: siteMetadata.description,
   },
   applicationName: siteMetadata.name,
+  verification: {
+    google: "7fPwEgVdd4XychUawn3dhUgNBMjppQA8NRHLVBVs__I",
+  },
 };
 
 export default function RootLayout({
