@@ -28,11 +28,21 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     type: "website",
     url: "/",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: siteMetadata.title,
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteMetadata.title,
     description: siteMetadata.description,
+    images: ["/og.png"],
   },
   applicationName: siteMetadata.name,
   verification: {
