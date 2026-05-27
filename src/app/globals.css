@@ -1,0 +1,348 @@
+@import "tailwindcss";
+
+:root {
+  /* デフォルト：ダークテーマ (Dark Theme) */
+  --background: #06050b;
+  --foreground: #f4f4f7;
+  --text-secondary: #a1a1aa;
+  
+  --glass-panel-bg: rgba(14, 12, 22, 0.6);
+  --glass-panel-border: rgba(255, 255, 255, 0.08);
+  --glass-panel-inset: rgba(255, 255, 255, 0.04);
+  
+  --glass-card-bg: rgba(255, 255, 255, 0.03);
+  --glass-card-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-card-border: rgba(255, 255, 255, 0.06);
+  --glass-card-border-hover: rgba(255, 255, 255, 0.12);
+  
+  --glass-input-bg: rgba(0, 0, 0, 0.35);
+  --glass-input-bg-focus: rgba(0, 0, 0, 0.5);
+  --glass-input-border: rgba(255, 255, 255, 0.08);
+  
+  --glass-btn-bg: rgba(255, 255, 255, 0.04);
+  --glass-btn-bg-hover: rgba(255, 255, 255, 0.09);
+  
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
+
+  /* デフォルトアクセント */
+  --accent-r: 139;
+  --accent-g: 92;
+  --accent-b: 246;
+
+  --accent-solid: rgb(var(--accent-r), var(--accent-g), var(--accent-b));
+  --accent-glow: 0 0 25px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.45);
+  --accent-border: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.3);
+  --accent-bg: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.08);
+
+  /* 動的オーブ色 (初期値：バイオレット、ピンク、ブルー系) */
+  --orb-color-1: hsla(258, 85%, 65%, 0.08);
+  --orb-color-2: hsla(320, 85%, 65%, 0.06);
+  --orb-color-3: hsla(217, 85%, 65%, 0.05);
+}
+
+.light-theme {
+  /* ライトテーマ (Apple Light Theme) */
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --text-secondary: #86868b;
+  
+  --glass-panel-bg: rgba(255, 255, 255, 0.45);
+  --glass-panel-border: rgba(0, 0, 0, 0.08);
+  --glass-panel-inset: rgba(255, 255, 255, 0.6);
+  
+  --glass-card-bg: rgba(255, 255, 255, 0.35);
+  --glass-card-bg-hover: rgba(255, 255, 255, 0.65);
+  --glass-card-border: rgba(0, 0, 0, 0.06);
+  --glass-card-border-hover: rgba(0, 0, 0, 0.14);
+  
+  --glass-input-bg: rgba(255, 255, 255, 0.65);
+  --glass-input-bg-focus: rgba(255, 255, 255, 0.95);
+  --glass-input-border: rgba(0, 0, 0, 0.12);
+  
+  --glass-btn-bg: rgba(0, 0, 0, 0.03);
+  --glass-btn-bg-hover: rgba(0, 0, 0, 0.06);
+  
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.24);
+
+  --accent-border: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.4);
+  --accent-bg: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.06);
+  
+  /* ライトテーマ用のオーブ不透明度調整（白飛びを抑え、優しく透かせる） */
+  --orb-color-1: hsla(var(--orb-h1, 258), 85%, 65%, 0.05);
+  --orb-color-2: hsla(var(--orb-h2, 320), 85%, 65%, 0.04);
+  --orb-color-3: hsla(var(--orb-h3, 217), 85%, 65%, 0.03);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 極細動的連動スクロールバーのカスタマイズ（webkit + Firefox 標準対応） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.35);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.65);
+}
+
+/* Appleスタイル プレミアム・屈折グラスモーフィズム */
+.glass-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), var(--glass-panel-bg);
+  backdrop-filter: blur(28px) saturate(210%);
+  -webkit-backdrop-filter: blur(28px) saturate(210%);
+  border: 1px solid var(--glass-panel-border);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px var(--glass-panel-inset);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-panel-light {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.0) 100%), var(--glass-card-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-card-border);
+  box-shadow: inset 0 1px 0 var(--glass-panel-inset);
+  transition: all 0.3s ease;
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.005) 100%), var(--glass-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-card-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%), var(--glass-card-bg-hover);
+  border-color: var(--glass-card-border-hover);
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.18),
+    0 0 15px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.15);
+  transform: translateY(-2px);
+}
+
+/* フォーム入力用グラススタイル */
+.glass-input {
+  background: var(--glass-input-bg);
+  border: 1px solid var(--glass-input-border);
+  color: var(--foreground);
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-input:focus {
+  border-color: var(--accent-border);
+  background: var(--glass-input-bg-focus);
+  box-shadow: 0 0 0 3px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.15);
+}
+
+/* アラート・警告など */
+.glass-danger-input {
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--foreground);
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-danger-input:focus {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* ボタン用グラススタイル */
+.glass-btn {
+  background: var(--glass-btn-bg);
+  border: 1px solid var(--glass-input-border);
+  backdrop-filter: blur(8px);
+  color: var(--foreground);
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.glass-btn:hover:not(:disabled) {
+  background: var(--glass-btn-bg-hover);
+  border-color: var(--glass-card-border-hover);
+}
+
+.glass-btn:active:not(:disabled) {
+  background: var(--glass-btn-bg);
+  transform: scale(0.98);
+}
+
+.glass-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.glass-btn-accent {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-solid);
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.light-theme .glass-btn-accent {
+  color: var(--accent-solid);
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.06);
+}
+
+.glass-btn-accent:hover:not(:disabled) {
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.15);
+  border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.55);
+  box-shadow: 0 0 15px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.2);
+}
+
+.glass-btn-accent:active:not(:disabled) {
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.06);
+  transform: scale(0.98);
+}
+
+/* オーロラメッシュ背景アニメーション */
+@keyframes drift1 {
+  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  33% { transform: translate(40px, -60px) scale(1.15) rotate(120deg); }
+  66% { transform: translate(-30px, 20px) scale(0.9) rotate(240deg); }
+  100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
+}
+
+@keyframes drift2 {
+  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  33% { transform: translate(-50px, 40px) scale(0.9) rotate(-120deg); }
+  66% { transform: translate(40px, -20px) scale(1.1) rotate(-240deg); }
+  100% { transform: translate(0px, 0px) scale(1) rotate(-360deg); }
+}
+
+@keyframes drift3 {
+  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  50% { transform: translate(20px, 30px) scale(1.05) rotate(180deg); }
+  100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
+}
+
+.animate-aurora-1 {
+  animation: drift1 25s infinite alternate ease-in-out;
+}
+
+.animate-aurora-2 {
+  animation: drift2 30s infinite alternate ease-in-out;
+}
+
+.animate-aurora-3 {
+  animation: drift3 22s infinite alternate ease-in-out;
+}
+
+/* ==========================================
+   🖥️ 配信画面（OBSオーバーレイ）モード用スタイル
+   ========================================== */
+.broadcast-mode .broadcast-hide {
+  display: none !important;
+}
+
+.broadcast-mode .broadcast-enlarge-text {
+  font-size: clamp(0.95rem, 1.6vw, 1.125rem) !important;
+  line-height: 1.45 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.broadcast-mode .broadcast-enlarge-sub {
+  font-size: clamp(0.8rem, 1.2vw, 0.95rem) !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+.broadcast-mode .broadcast-suspect-name {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.broadcast-mode .broadcast-glow-strong {
+  box-shadow: 0 0 30px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.5) !important;
+  border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.6) !important;
+}
+
+.broadcast-mode .broadcast-matched-card {
+  font-size: 1.05rem !important;
+  padding: 1rem !important;
+  border-width: 2px !important;
+}
+
+/* 🖥️ OBS用 背景完全透過オーバーレイ設定 */
+body.broadcast-mode,
+.broadcast-mode {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* ポップアップの出現フェードアニメーション */
+@keyframes popoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-popover-in {
+  animation: popoverIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ドロップ成功時のネオンバーストパルス効果 */
+@keyframes dropPulse {
+  0% {
+    box-shadow: 0 0 0 0px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.8);
+    border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px 8px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.5);
+    border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.8);
+    transform: scale(1.015);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0);
+    border-color: var(--glass-card-border);
+    transform: scale(1);
+  }
+}
+
+.animate-drop-pulse {
+  animation: dropPulse 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
