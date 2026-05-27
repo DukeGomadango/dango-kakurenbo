@@ -5,8 +5,7 @@ export default function SeoIntro() {
   return (
     <section aria-label={`${siteMetadata.name}について`} className="sr-only">
       <p>
-        {siteMetadata.name}（{siteMetadata.tagline}
-        ）は、{siteMetadata.description}
+        {siteMetadata.name}は、{siteMetadata.description}
       </p>
       <h2>主な機能</h2>
       <ul>
