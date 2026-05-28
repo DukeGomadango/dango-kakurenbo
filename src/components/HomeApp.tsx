@@ -443,7 +443,7 @@ export default function HomeApp() {
       )}
 
       {/* === ヘッダー（グラスモーフィズム） === */}
-      <header className={`glass-panel px-6 py-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-white/10 shadow-2xl relative transition-all duration-300 ${
+      <header className={`glass-panel px-3 sm:px-6 py-3 sm:py-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-white/10 shadow-2xl relative transition-all duration-300 ${
         isBroadcastMode ? "opacity-90 max-w-4xl mx-auto border-violet-500/20" : ""
       }`}>
         
@@ -471,7 +471,7 @@ export default function HomeApp() {
         </div>
 
         {/* タブナビゲーション & ツールスイッチ */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           
           {/* メイン画面切り替えタブ（配信モード中は非表示） */}
           <nav className={`flex bg-black/20 dark:bg-black/40 border border-white/5 p-1 rounded-xl shrink-0 transition-all duration-300 ${
@@ -479,30 +479,30 @@ export default function HomeApp() {
           }`}>
             <button
               onClick={() => setActiveTab("matrix")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+              className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-200 ${
                 activeTab === "matrix"
                   ? "bg-white/15 dark:bg-white/10 text-[var(--foreground)] shadow-md"
                   : "text-[var(--text-secondary)] hover:text-[var(--foreground)]"
               }`}
             >
-              <Table size={14} style={{ color: activeTab === "matrix" ? "var(--accent-solid)" : undefined }} />
+              <Table size={13} style={{ color: activeTab === "matrix" ? "var(--accent-solid)" : undefined }} />
               参加者一覧
             </button>
             
             <button
               onClick={() => setActiveTab("board")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+              className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-200 ${
                 activeTab === "board"
                   ? "bg-white/15 dark:bg-white/10 text-[var(--foreground)] shadow-md"
                   : "text-[var(--text-secondary)] hover:text-[var(--foreground)]"
               }`}
             >
-              <LayoutGrid size={14} style={{ color: activeTab === "board" ? "var(--accent-solid)" : undefined }} />
+              <LayoutGrid size={13} style={{ color: activeTab === "board" ? "var(--accent-solid)" : undefined }} />
               推理キャンバス
             </button>
           </nav>
 
-          <div className="flex items-center gap-2 relative shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 relative shrink-0">
             {/* モバイル用：設定ポップアップ時の背景オーバーレイ */}
             {(isColorPickerOpen || isDataMenuOpen) && (
               <div
@@ -517,14 +517,14 @@ export default function HomeApp() {
             {/* 配信モード切替トグル */}
             <button
               onClick={() => setIsBroadcastMode(!isBroadcastMode)}
-              className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center gap-1.5 font-extrabold text-[10px] ${
+              className={`p-2 sm:p-2.5 rounded-xl border transition-all duration-200 flex items-center gap-1 sm:gap-1.5 font-extrabold text-[9px] sm:text-[10px] ${
                 isBroadcastMode
                   ? "bg-red-500/10 border-red-500/40 text-red-400 hover:bg-red-500/20"
                   : "bg-black/10 dark:bg-black/40 border-white/5 text-[var(--text-secondary)] hover:text-[var(--foreground)] hover:bg-white/5"
               }`}
               title={isBroadcastMode ? "通常モードに戻す" : "配信画面（OBS）モードを起動"}
             >
-              <Tv size={15} className={isBroadcastMode ? "animate-pulse" : ""} />
+              <Tv size={14} className={isBroadcastMode ? "animate-pulse" : ""} />
               {isBroadcastMode && <span>配信モード ON</span>}
             </button>
 
@@ -533,12 +533,12 @@ export default function HomeApp() {
               <div className="relative" ref={colorPickerRef}>
                 <button
                   onClick={() => { setIsColorPickerOpen(!isColorPickerOpen); setIsDataMenuOpen(false); }}
-                  className={`p-2.5 rounded-xl bg-black/10 dark:bg-black/40 border border-white/5 hover:bg-white/5 text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-all duration-200 ${
+                  className={`p-2 sm:p-2.5 rounded-xl bg-black/10 dark:bg-black/40 border border-white/5 hover:bg-white/5 text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-all duration-200 ${
                     isColorPickerOpen ? "border-[var(--accent-border)] text-[var(--foreground)]" : ""
                   }`}
                   title="テーマ＆アクセントカラー調整"
                 >
-                  <Palette size={15} style={{ color: isColorPickerOpen ? "var(--accent-solid)" : undefined }} />
+                  <Palette size={14} style={{ color: isColorPickerOpen ? "var(--accent-solid)" : undefined }} />
                 </button>
 
                 {/* カラー調整ポップアップ */}
@@ -631,12 +631,12 @@ export default function HomeApp() {
               <div className="relative" ref={dataMenuRef}>
                 <button
                   onClick={() => { setIsDataMenuOpen(!isDataMenuOpen); setIsColorPickerOpen(false); }}
-                  className={`p-2.5 rounded-xl bg-black/10 dark:bg-black/40 border border-white/5 hover:bg-white/5 text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-all duration-200 ${
+                  className={`p-2 sm:p-2.5 rounded-xl bg-black/10 dark:bg-black/40 border border-white/5 hover:bg-white/5 text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-all duration-200 ${
                     isDataMenuOpen ? "border-[var(--accent-border)] text-[var(--foreground)]" : ""
                   }`}
                   title="リスナープリセット＆データ管理"
                 >
-                  <Database size={15} style={{ color: isDataMenuOpen ? "var(--accent-solid)" : undefined }} />
+                  <Database size={14} style={{ color: isDataMenuOpen ? "var(--accent-solid)" : undefined }} />
                 </button>
 
                 {/* データ＆プリセット管理ポップアップ */}
