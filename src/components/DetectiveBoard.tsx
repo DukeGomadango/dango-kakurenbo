@@ -45,6 +45,10 @@ export default function DetectiveBoard({
   const [suspectQuery, setSuspectQuery] = useState("");
   const [regularQuery, setRegularQuery] = useState("");
 
+  // モバイル「Companion Mode」用ステート
+  const [selectedSuspectIdForAssign, setSelectedSuspectIdForAssign] = useState<string | null>(null);
+  const [undoAction, setUndoAction] = useState<{ suspectId: string; regularName: string } | null>(null);
+
   // インラインリスナー登録用ステート
   const [newRegularName, setNewRegularName] = useState("");
   const [showAddRegularInput, setShowAddRegularInput] = useState(false);
@@ -280,11 +284,21 @@ export default function DetectiveBoard({
     );
   };
 
+  const handlePocketClickMobile = (regular: Regular) => {
+    if (regularSelectMode) {
+      toggleRegularSelection(regular.id);
+    } else if (selectedSuspectIdForAssign) {
+      toggleLink(selectedSuspectIdForAssign, regular.name);
+      setUndoAction({ suspectId: selectedSuspectIdForAssign, regularName: regular.name });
+      setSelectedSuspectIdForAssign(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      
-      {/* === スプリットビュー コントロールヘッダー（配信モード時は完全非表示） === */}
-      {!isBroadcastMode && (
+      {/* 🖥️ デスクトップ専用表示 または モバイル配信モード時 */}
+      <div className={`${isBroadcastMode ? "block" : "hidden md:block"} space-y-4`}>
+        {!isBroadcastMode && (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/5 border border-white/8 backdrop-blur-md px-6 py-4 rounded-2xl">
           <div className="space-y-0.5">
             <h2 className="text-base font-semibold tracking-wide text-[var(--foreground)]">かくれんぼ・推理カード</h2>
@@ -966,10 +980,428 @@ export default function DetectiveBoard({
               </div>
             )}
           </div>
-
         </div>
         }
       />
+      </div>
+
+      {/* 📱 モバイル専用表示 ( md未満 かつ 配信モードOFF時のみ表示 ) */}
+      <div className={`${isBroadcastMode ? "hidden" : "block md:hidden"} space-y-4 relative`}>
+        <div className={`glass-panel rounded-2xl p-4 overflow-hidden border border-white/10 z-0 flex flex-col transition-all duration-300 ${
+          isBroadcastMode 
+            ? "h-[calc(100vh-240px)] min-h-[350px] border-emerald-500/10 shadow-[inset_0_0_15px_rgba(16,185,129,0.02)]" 
+            : "h-[calc(100vh-320px)] min-h-[400px]"
+        }`}>
+          {/* リスナーヘッダー */}
+          <div className="space-y-3 pb-3 border-b border-white/5 shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <UserCheck size={14} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-extrabold text-[var(--foreground)] tracking-wide">リスナー一覧</h3>
+                  <p className="text-[8px] text-[var(--text-secondary)]">
+                    登録数: {regulars.length}人 {selectedSuspectIdForAssign ? "（アセンブリ待機中。タップで配置）" : "（参加者選択後にポケットをタップ）"}
+                  </p>
+                </div>
+              </div>
+
+              {!isBroadcastMode && (
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (regularSelectMode) exitRegularSelectMode();
+                      else {
+                        setShowAddRegularInput(false);
+                        setRegularSelectMode(true);
+                      }
+                    }}
+                    disabled={regulars.length === 0 && !regularSelectMode}
+                    className={`px-2 py-1 rounded-lg text-[9px] font-bold border transition-colors disabled:opacity-40 ${
+                      regularSelectMode
+                        ? "bg-red-500/10 border-red-500/30 text-red-400"
+                        : "bg-black/10 dark:bg-white/5 border-white/5 text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    {regularSelectMode ? "終了" : "選択削除"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      exitRegularSelectMode();
+                      setShowAddRegularInput(!showAddRegularInput);
+                    }}
+                    className={`px-2 py-1 rounded-lg text-[9px] font-bold border transition-colors ${
+                      showAddRegularInput ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold" : "bg-black/10 dark:bg-white/5 border-white/5 text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    追加
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 一括削除ツールバー */}
+            {regularSelectMode && !isBroadcastMode && (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-red-500/[0.04] border border-red-500/15 animate-fadeIn">
+                <span className="text-[9px] font-bold text-[var(--text-secondary)]">{selectedRegularIds.size}人選択中</span>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={selectAllFilteredRegulars}
+                    className="px-2 py-0.5 rounded border border-white/10 text-[9px] text-[var(--text-secondary)]"
+                  >
+                    全選択
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBulkDeleteRegulars}
+                    disabled={selectedRegularIds.size === 0}
+                    className="px-2.5 py-0.5 rounded bg-red-500 text-white text-[9px] font-extrabold"
+                  >
+                    削除
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* モバイル用インライン追加 */}
+            {showAddRegularInput && !isBroadcastMode && (
+              <div className="p-3 rounded-xl bg-black/10 dark:bg-white/5 border border-white/5 animate-fadeIn space-y-2.5">
+                <div className="flex bg-black/20 p-0.5 rounded-lg border border-white/5 w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setRegularInputMode("single")}
+                    className={`px-2 py-0.5 rounded text-[9px] font-bold ${regularInputMode === "single" ? "bg-white/10 text-[var(--foreground)]" : "text-[var(--text-secondary)]"}`}
+                  >
+                    1人ずつ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRegularInputMode("bulk")}
+                    className={`px-2 py-0.5 rounded text-[9px] font-bold flex items-center gap-0.5 ${regularInputMode === "bulk" ? "bg-white/10 text-[var(--foreground)]" : "text-[var(--text-secondary)]"}`}
+                  >
+                    一括
+                  </button>
+                </div>
+
+                {regularInputMode === "single" && (
+                  <form onSubmit={handleAddRegularInline} className="flex gap-1.5 animate-fadeIn">
+                    <input
+                      type="text"
+                      placeholder="新しいリスナー..."
+                      value={newRegularName}
+                      onChange={(e) => setNewRegularName(e.target.value)}
+                      className="flex-1 bg-black/20 dark:bg-black/40 border border-white/5 rounded px-2.5 py-1 text-xs outline-none text-[var(--foreground)]"
+                    />
+                    <button type="submit" className="px-3 py-1 rounded bg-[var(--accent-solid)] text-white text-[10px] font-bold">追加</button>
+                  </form>
+                )}
+
+                {regularInputMode === "bulk" && (
+                  <div className="space-y-2.5">
+                    <textarea
+                      placeholder="カンマや改行区切りで入力..."
+                      value={bulkInput}
+                      onChange={(e) => setBulkInput(e.target.value)}
+                      className="w-full h-16 bg-black/25 dark:bg-black/40 border border-white/8 rounded-lg p-2 text-xs outline-none text-[var(--foreground)]"
+                    />
+                    <button onClick={handleAddBulkRegulars} disabled={parsedBulkNames.length === 0} className="w-full py-1.5 rounded bg-emerald-500 text-white text-[10px] font-bold">
+                      {parsedBulkNames.length}人を一括登録
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* クイック検索バー */}
+            {!isBroadcastMode && (
+              <div className="relative animate-fadeIn">
+                <Search size={12} className="absolute left-2.5 top-2 text-[var(--text-secondary)]" />
+                <input
+                  type="text"
+                  placeholder="リスナーをリアルタイム検索..."
+                  value={regularQuery}
+                  onChange={(e) => setRegularQuery(e.target.value)}
+                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg pl-8 pr-7 py-1 text-[10px] outline-none focus:border-violet-500 text-[var(--foreground)]"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ポケットリスト */}
+          <div className="flex-1 overflow-y-auto space-y-3 mt-2 pr-1 scrollbar-thin">
+            {filteredRegulars.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-secondary)] text-xs py-8">
+                リスナーがいません
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 pb-2">
+                {filteredRegulars.map(regular => {
+                  const dockedSuspects = suspects.filter(s => s.isSolved && (s.realNameGuesses || []).includes(regular.name));
+                  const linkedSuspects = suspects.filter(s => !s.isSolved && (s.realNameGuesses || []).includes(regular.name));
+                  const isMatched = dockedSuspects.length > 0;
+                  const isRegularSelected = selectedRegularIds.has(regular.id);
+                  const isTargetHoverable = !!selectedSuspectIdForAssign;
+
+                  return (
+                    <div
+                      key={regular.id}
+                      onClick={() => handlePocketClickMobile(regular)}
+                      className={`w-full rounded-2xl glass-card border p-3 flex flex-col gap-2 transition-all duration-200 ${
+                        regularSelectMode || isTargetHoverable ? "cursor-pointer" : ""
+                      } ${
+                        isRegularSelected
+                          ? "border-red-500/40 bg-red-500/[0.03] ring-1 ring-red-500/20"
+                          : isTargetHoverable
+                          ? "border-[var(--accent-border)] bg-[var(--accent-bg)] shadow-[0_0_10px_rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05)] hover:border-[var(--accent-solid)]"
+                          : isMatched
+                          ? "bg-emerald-500/[0.01] border-emerald-500/20"
+                          : "border-white/5"
+                      }`}
+                      style={{
+                        borderColor: isMatched && !isRegularSelected && !isTargetHoverable ? `${regular.color}45` : undefined
+                      }}
+                    >
+                      <div className="flex items-center justify-between pb-1 border-b border-white/5">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {regularSelectMode && !isBroadcastMode && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRegularSelection(regular.id);
+                              }}
+                              className="text-[var(--text-secondary)] mr-0.5"
+                            >
+                              {isRegularSelected ? <CheckSquare size={13} className="text-red-400" /> : <Square size={13} />}
+                            </button>
+                          )}
+                          <span 
+                            className="w-2 h-2 rounded-full inline-block shrink-0 shadow-[0_0_6px_currentColor]" 
+                            style={{ backgroundColor: regular.color, color: regular.color }}
+                          />
+                          <TruncatedText
+                            text={regular.name}
+                            className="text-[10px] font-bold text-[var(--foreground)]"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          {isMatched && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-[7px] tracking-wide animate-pulse">
+                              確定
+                            </span>
+                          )}
+                          {!isMatched && linkedSuspects.length > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-extrabold text-[7px]">
+                              候補: {linkedSuspects.length}
+                            </span>
+                          )}
+                          {!isBroadcastMode && !regularSelectMode && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteRegular(regular, e);
+                              }}
+                              className="text-[var(--text-secondary)] hover:text-red-400"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* ポケット中身 */}
+                      <div className="space-y-1.5">
+                        {linkedSuspects.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {linkedSuspects.map(suspect => (
+                              <div
+                                key={suspect.id}
+                                className="flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md border bg-black/15 border-white/5 text-[var(--foreground)] font-medium text-[9px]"
+                              >
+                                <span className="flex items-center gap-1 truncate">
+                                  <User size={8} className="shrink-0 opacity-60" />
+                                  <TruncatedText text={suspect.fakeName} className="flex-1" />
+                                </span>
+                                
+                                {!isBroadcastMode && (
+                                  <>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleSolved(suspect.id, true);
+                                      }}
+                                      className="p-0.5 text-emerald-500 hover:bg-emerald-500/10 cursor-pointer"
+                                    >
+                                      <CheckCircle2 size={9} />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleLink(suspect.id, regular.name);
+                                      }}
+                                      className="p-0.5 text-[var(--text-secondary)] hover:text-red-400 cursor-pointer"
+                                    >
+                                      <X size={9} />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {dockedSuspects.length > 0 && (
+                          <div className="space-y-1 border-t border-dashed border-emerald-500/10 pt-1.5">
+                            {dockedSuspects.map(suspect => (
+                              <div
+                                key={suspect.id}
+                                className="glass-panel-light rounded-lg border border-emerald-500/20 p-2 text-[8px] flex items-center justify-between gap-1 shadow-sm"
+                              >
+                                <span className="flex items-center gap-1 min-w-0 font-semibold text-[var(--foreground)]">
+                                  <UserCheck size={10} className="shrink-0 opacity-80" />
+                                  <TruncatedText text={suspect.fakeName} className="flex-1" />
+                                </span>
+                                
+                                {!isBroadcastMode && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggleSolved(suspect.id, false);
+                                    }}
+                                    className="px-1 py-0.5 rounded bg-black/15 text-[var(--text-secondary)] hover:text-red-400 font-bold text-[8px] cursor-pointer"
+                                  >
+                                    解除
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {linkedSuspects.length === 0 && dockedSuspects.length === 0 && (
+                          <div className="py-1 text-center border border-dashed border-white/5 rounded-lg text-[8px] text-[var(--text-secondary)] italic select-none">
+                            空のポケット
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 📱 モバイル専用：下部固定参加者カルーセル */}
+        {!isBroadcastMode && (
+          <div className="fixed bottom-0 left-0 right-0 z-50 glass-panel border-t border-white/10 p-3 flex flex-col gap-2 shadow-[0_-10px_30px_rgba(0,0,0,0.55)]">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-extrabold text-[var(--text-secondary)] tracking-wide flex items-center gap-1 uppercase">
+                <Sparkles size={11} className="text-violet-400" />
+                アサイン操作: 参加者をタップ ➔ リスナーをタップ
+              </span>
+              {selectedSuspectIdForAssign && (
+                <button
+                  onClick={() => setSelectedSuspectIdForAssign(null)}
+                  className="text-[9px] font-bold text-red-400"
+                >
+                  選択解除
+                </button>
+              )}
+            </div>
+            
+            <div className="flex overflow-x-auto gap-3 py-1.5 scrollbar-none snap-x">
+              {unsolvedSuspects.length === 0 ? (
+                <div className="w-full text-center text-[10px] text-[var(--text-secondary)] py-4 italic">
+                  本命当てが必要な参加者はすべて解決しました！
+                </div>
+              ) : (
+                unsolvedSuspects.map(suspect => {
+                  const isSelected = selectedSuspectIdForAssign === suspect.id;
+                  const totalQ = questions.length;
+                  const answeredQ = questions.filter(q => suspect.answers && suspect.answers[q.id]?.trim()).length;
+                  const guesses = suspect.realNameGuesses || [];
+
+                  return (
+                    <div
+                      key={suspect.id}
+                      onClick={() => setSelectedSuspectIdForAssign(isSelected ? null : suspect.id)}
+                      className={`snap-center shrink-0 w-[180px] rounded-xl glass-card border p-3 flex flex-col gap-2 transition-all duration-300 cursor-pointer ${
+                        isSelected
+                          ? "border-[var(--accent-solid)] bg-white/5 ring-1 ring-[var(--accent-solid)] shadow-[0_0_15px_rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3)] scale-[1.01]"
+                          : "border-white/5 bg-black/20"
+                      }`}
+                      style={{
+                        transform: isSelected ? "scale(1.02)" : undefined,
+                        transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                      }}
+                    >
+                      <div className="flex items-center justify-between border-b border-white/5 pb-1">
+                        <span className="text-[10px] font-bold text-[var(--foreground)] truncate flex items-center gap-1">
+                          <User size={10} className="shrink-0 opacity-60" />
+                          {suspect.fakeName}
+                        </span>
+                        <span className="text-[8px] px-1 bg-white/5 rounded text-[var(--text-secondary)]">
+                          {answeredQ}/{totalQ}
+                        </span>
+                      </div>
+                      
+                      <div className="text-[8px] text-[var(--text-secondary)] space-y-0.5 truncate">
+                        {questions.slice(0, 1).map(q => {
+                          const ans = suspect.answers?.[q.id] || "";
+                          return (
+                            <div key={q.id} className="truncate">
+                              <span className="font-semibold">{q.text}: </span>
+                              <span className="text-[var(--foreground)]">{ans || "（未回答）"}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      <div className="text-[8px] flex items-center gap-1 border-t border-white/5 pt-1 mt-auto">
+                        <Link2 size={9} className="text-[var(--text-secondary)]" />
+                        <span className="text-[8px] text-violet-400 truncate">
+                          予想: {guesses.length > 0 ? guesses.join(", ") : "未予想"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 📱 誤爆防止の Undo トースト */}
+        {undoAction && (
+          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] glass-panel px-4 py-2.5 rounded-xl border border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] flex items-center gap-3 animate-popover-in">
+            <span className="text-[10px] font-semibold text-[var(--foreground)]">
+              紐付けを更新しました
+            </span>
+            <button
+              onClick={() => {
+                toggleLink(undoAction.suspectId, undoAction.regularName);
+                setUndoAction(null);
+              }}
+              className="px-2.5 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold cursor-pointer transition-all active:scale-95"
+            >
+              元に戻す
+            </button>
+            <button
+              onClick={() => setUndoAction(null)}
+              className="text-[var(--text-secondary)] hover:text-[var(--foreground)] cursor-pointer"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

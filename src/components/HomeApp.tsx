@@ -502,8 +502,17 @@ export default function HomeApp() {
             </button>
           </nav>
 
-          {/* ストリーマーユーティリティコントロール */}
           <div className="flex items-center gap-2 relative shrink-0">
+            {/* モバイル用：設定ポップアップ時の背景オーバーレイ */}
+            {(isColorPickerOpen || isDataMenuOpen) && (
+              <div
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden"
+                onClick={() => {
+                  setIsColorPickerOpen(false);
+                  setIsDataMenuOpen(false);
+                }}
+              />
+            )}
             
             {/* 配信モード切替トグル */}
             <button
@@ -534,7 +543,7 @@ export default function HomeApp() {
 
                 {/* カラー調整ポップアップ */}
                 {isColorPickerOpen && (
-                  <div className="absolute right-0 top-12 z-50 glass-panel p-4 rounded-2xl shadow-2xl border border-white/12 w-64 animate-popover-in space-y-4">
+                  <div className="md:absolute md:right-0 md:top-12 fixed bottom-0 left-0 right-0 w-full rounded-t-3xl rounded-b-none md:rounded-2xl border-t md:border border-white/12 z-[60] glass-panel p-4 shadow-2xl animate-popover-in space-y-4 md:w-64">
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
                       <span className="text-xs font-extrabold text-[var(--foreground)]">アクセントカラー調整</span>
                       <button onClick={() => setIsColorPickerOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-colors cursor-pointer">
@@ -632,7 +641,7 @@ export default function HomeApp() {
 
                 {/* データ＆プリセット管理ポップアップ */}
                 {isDataMenuOpen && (
-                  <div className="absolute right-0 top-12 z-50 glass-panel p-4 rounded-2xl shadow-2xl border border-white/12 w-72 animate-popover-in space-y-4 max-h-[550px] overflow-y-auto scrollbar-thin">
+                  <div className="md:absolute md:right-0 md:top-12 fixed bottom-0 left-0 right-0 w-full rounded-t-3xl rounded-b-none md:rounded-2xl border-t md:border border-white/12 z-[60] glass-panel p-4 shadow-2xl animate-popover-in space-y-4 max-h-[80vh] md:max-h-[550px] overflow-y-auto scrollbar-thin md:w-72">
                     
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
                       <span className="text-xs font-extrabold text-[var(--foreground)]">リスナー・データ管理</span>
