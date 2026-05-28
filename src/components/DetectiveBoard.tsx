@@ -1424,6 +1424,114 @@ export default function DetectiveBoard({
             </button>
           </div>
         )}
+
+        {/* 📱 プレミアム・コンテキスト・アクション・ボトムシート (真のモバイルベストプラクティス) */}
+        {selectedSuspectIdForAssign && (
+          <>
+            {/* バックドロップ (背景の薄暗いぼかしオーバーレイ) */}
+            <div 
+              onClick={() => setSelectedSuspectIdForAssign(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 animate-fadeIn"
+            />
+            
+            {/* ボトムシート本体 */}
+            <div className="fixed bottom-0 left-0 right-0 max-h-[78vh] bg-[var(--glass-panel-bg)] backdrop-blur-2xl border-t border-white/10 rounded-t-3xl p-5 z-[60] flex flex-col gap-4 shadow-[0_-15px_40px_rgba(0,0,0,0.6)] animate-slide-up">
+              {/* シート上部ガイドバー */}
+              <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto shrink-0 cursor-pointer" onClick={() => setSelectedSuspectIdForAssign(null)} />
+              
+              {/* ヘッダー部 */}
+              <div className="flex items-center justify-between border-b border-white/5 pb-3 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-2 rounded-xl bg-[var(--accent-bg)] text-[var(--accent-solid)] border border-[var(--accent-border)]">
+                    <UserCheck size={18} className="animate-pulse" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black text-[var(--foreground)] tracking-wide truncate">
+                      {suspects.find(s => s.id === selectedSuspectIdForAssign)?.fakeName || "参加者"}
+                    </h3>
+                    <p className="text-[9px] text-[var(--text-secondary)]">回答を確認し、配属先リスナーをタップしてください</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedSuspectIdForAssign(null)}
+                  className="p-1.5 rounded-full bg-white/5 text-[var(--text-secondary)] hover:text-[var(--foreground)] cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* 回答一覧セクション（スクロール可能） */}
+              <div className="flex flex-col gap-2 overflow-y-auto max-h-[28vh] pr-1 scrollbar-thin shrink-0">
+                <span className="text-[9px] font-bold text-[var(--text-secondary)] tracking-wider uppercase">【質問回答一覧】</span>
+                {questions.map((q, idx) => {
+                  const suspect = suspects.find(s => s.id === selectedSuspectIdForAssign);
+                  const ans = suspect?.answers?.[q.id] || "（未回答）";
+                  return (
+                    <div key={q.id} className="p-2.5 rounded-xl bg-black/20 dark:bg-black/30 border border-white/5 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-violet-400">
+                        <span className="px-1 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-[8px]">Q{idx + 1}</span>
+                        <span>{q.text}</span>
+                      </div>
+                      <p className="text-xs text-[var(--foreground)] font-medium pl-1 leading-relaxed select-text whitespace-pre-wrap">{ans}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 配属先リスナー選択セクション */}
+              <div className="flex-1 flex flex-col gap-2 overflow-hidden mt-1">
+                <span className="text-[9px] font-bold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1 shrink-0">
+                  <User size={10} className="text-emerald-400" />
+                  配属先リスナーを選択 ({regulars.length}名)
+                </span>
+                
+                <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
+                  {regulars.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-secondary)] text-xs py-8 italic bg-black/10 rounded-xl border border-dashed border-white/5">
+                      登録されているリスナーがいません
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 pb-2">
+                      {regulars.map(regular => {
+                        const isDocked = suspects.some(s => s.isSolved && (s.realNameGuesses || []).includes(regular.name));
+                        const isLinked = suspects.some(s => !s.isSolved && (s.realNameGuesses || []).includes(regular.name));
+                        
+                        return (
+                          <button
+                            key={regular.id}
+                            onClick={() => handlePocketClickMobile(regular)}
+                            className="p-3 rounded-2xl glass-card border border-white/5 text-left flex items-center justify-between gap-1.5 transition-all duration-200 cursor-pointer active:scale-95 text-xs font-bold"
+                            style={{
+                              borderColor: isDocked ? "rgba(16, 185, 129, 0.3)" : undefined,
+                              background: isDocked ? "rgba(16, 185, 129, 0.04)" : undefined,
+                            }}
+                          >
+                            <span className="flex items-center gap-1.5 min-w-0">
+                              <span 
+                                className="w-1.5 h-1.5 rounded-full inline-block shrink-0 shadow-[0_0_6px_currentColor]" 
+                                style={{ backgroundColor: regular.color, color: regular.color }}
+                              />
+                              <span className="truncate text-[10px] text-[var(--foreground)]">{regular.name}</span>
+                            </span>
+                            
+                            <span className="shrink-0 flex gap-0.5">
+                              {isDocked && (
+                                <span className="px-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[7px] text-emerald-400 font-extrabold tracking-wide">確定</span>
+                              )}
+                              {!isDocked && isLinked && (
+                                <span className="px-1 rounded bg-yellow-500/10 border border-yellow-500/20 text-[7px] text-yellow-400 font-extrabold tracking-wide">候補</span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
