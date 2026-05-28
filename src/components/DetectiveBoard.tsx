@@ -48,6 +48,7 @@ export default function DetectiveBoard({
   // モバイル「Companion Mode」用ステート
   const [selectedSuspectIdForAssign, setSelectedSuspectIdForAssign] = useState<string | null>(null);
   const [undoAction, setUndoAction] = useState<{ suspectId: string; regularName: string } | null>(null);
+  const [recentlyAssignedPocketId, setRecentlyAssignedPocketId] = useState<string | null>(null);
 
   // インラインリスナー登録用ステート
   const [newRegularName, setNewRegularName] = useState("");
@@ -288,6 +289,17 @@ export default function DetectiveBoard({
     if (regularSelectMode) {
       toggleRegularSelection(regular.id);
     } else if (selectedSuspectIdForAssign) {
+      // 📱 アサイン成功時の触覚フィードバック（ツブツブ感のある2連タップ振動）
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate([15, 30, 10]);
+      }
+      
+      // 📱 フラッシュエフェクト用の一時状態セット（550msアニメーション完了後に消去）
+      setRecentlyAssignedPocketId(regular.id);
+      setTimeout(() => {
+        setRecentlyAssignedPocketId(null);
+      }, 550);
+
       toggleLink(selectedSuspectIdForAssign, regular.name);
       setUndoAction({ suspectId: selectedSuspectIdForAssign, regularName: regular.name });
       setSelectedSuspectIdForAssign(null);
@@ -1145,6 +1157,7 @@ export default function DetectiveBoard({
                   const isMatched = dockedSuspects.length > 0;
                   const isRegularSelected = selectedRegularIds.has(regular.id);
                   const isTargetHoverable = !!selectedSuspectIdForAssign;
+                  const isRecentlyAssigned = recentlyAssignedPocketId === regular.id;
 
                   return (
                     <div
@@ -1153,16 +1166,18 @@ export default function DetectiveBoard({
                       className={`w-full rounded-2xl glass-card border p-3 flex flex-col gap-2 transition-all duration-200 ${
                         regularSelectMode || isTargetHoverable ? "cursor-pointer" : ""
                       } ${
-                        isRegularSelected
+                        isRecentlyAssigned
+                          ? "animate-success-flash border-emerald-500 bg-emerald-500/10"
+                          : isRegularSelected
                           ? "border-red-500/40 bg-red-500/[0.03] ring-1 ring-red-500/20"
                           : isTargetHoverable
-                          ? "border-[var(--accent-border)] bg-[var(--accent-bg)] shadow-[0_0_10px_rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.05)] hover:border-[var(--accent-solid)]"
+                          ? "animate-target-guide border-[var(--accent-border)] bg-[var(--accent-bg)]"
                           : isMatched
                           ? "bg-emerald-500/[0.01] border-emerald-500/20"
                           : "border-white/5"
                       }`}
                       style={{
-                        borderColor: isMatched && !isRegularSelected && !isTargetHoverable ? `${regular.color}45` : undefined
+                        borderColor: isMatched && !isRegularSelected && !isTargetHoverable && !isRecentlyAssigned ? `${regular.color}45` : undefined
                       }}
                     >
                       <div className="flex items-center justify-between pb-1 border-b border-white/5">
@@ -1331,20 +1346,28 @@ export default function DetectiveBoard({
                   return (
                     <div
                       key={suspect.id}
-                      onClick={() => setSelectedSuspectIdForAssign(isSelected ? null : suspect.id)}
+                      onClick={() => {
+                        const nextSelected = isSelected ? null : suspect.id;
+                        if (nextSelected && typeof navigator !== "undefined" && navigator.vibrate) {
+                          navigator.vibrate(10); // 📱 カード選択時の軽い触覚フィードバック
+                        }
+                        setSelectedSuspectIdForAssign(nextSelected);
+                      }}
                       className={`snap-center shrink-0 w-[180px] rounded-xl glass-card border p-3 flex flex-col gap-2 transition-all duration-300 cursor-pointer ${
                         isSelected
-                          ? "border-[var(--accent-solid)] bg-white/5 ring-1 ring-[var(--accent-solid)] shadow-[0_0_15px_rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.3)] scale-[1.01]"
+                          ? "border-[var(--accent-solid)] bg-gradient-to-br from-[var(--accent-solid)]/15 via-[var(--accent-solid)]/[0.03] to-transparent ring-2 ring-[var(--accent-solid)]/30 animate-select-breathing shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
                           : "border-white/5 bg-black/20"
                       }`}
                       style={{
-                        transform: isSelected ? "scale(1.02)" : undefined,
-                        transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                        transform: isSelected ? "translateY(-4px) scale(1.04)" : undefined,
+                        transition: "all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1)"
                       }}
                     >
                       <div className="flex items-center justify-between border-b border-white/5 pb-1">
-                        <span className="text-[10px] font-bold text-[var(--foreground)] truncate flex items-center gap-1">
-                          <User size={10} className="shrink-0 opacity-60" />
+                        <span className={`text-[10px] font-bold truncate flex items-center gap-1 transition-colors duration-300 ${
+                          isSelected ? "text-[var(--accent-solid)] drop-shadow-[0_0_8px_rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.4)]" : "text-[var(--foreground)]"
+                        }`}>
+                          <User size={10} className={`shrink-0 transition-opacity ${isSelected ? "opacity-90" : "opacity-60"}`} />
                           {suspect.fakeName}
                         </span>
                         <span className="text-[8px] px-1 bg-white/5 rounded text-[var(--text-secondary)]">

@@ -345,4 +345,70 @@ body.broadcast-mode,
   animation: dropPulse 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* 📱 モバイル選択時：浮遊カードのネオン呼吸アニメーション */
+@keyframes selectionBreathing {
+  0% {
+    box-shadow: 0 0 8px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.25),
+                0 0 15px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.1);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.6),
+                0 0 30px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.3);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.25),
+                0 0 15px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.1);
+  }
+}
+
+.animate-select-breathing {
+  animation: selectionBreathing 2.0s infinite ease-in-out;
+}
+
+/* 📱 アサイン先ターゲットの磁力ガイドパルス */
+@keyframes targetMagneticGuide {
+  0% {
+    border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.25);
+    box-shadow: 0 0 4px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.05);
+  }
+  50% {
+    border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.75);
+    box-shadow: 0 0 15px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.2);
+  }
+  100% {
+    border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.25);
+    box-shadow: 0 0 4px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.05);
+  }
+}
+
+.animate-target-guide {
+  animation: targetMagneticGuide 1.5s infinite ease-in-out;
+}
+
+/* 📱 アサイン成功時のフラッシュパルス効果 */
+@keyframes successFlash {
+  0% {
+    transform: scale(0.97);
+    box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.8);
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 1);
+  }
+  30% {
+    transform: scale(1.03);
+    box-shadow: 0 0 25px 8px rgba(16, 185, 129, 0.45);
+    background-color: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0px rgba(16, 185, 129, 0);
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.animate-success-flash {
+  animation: successFlash 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 
