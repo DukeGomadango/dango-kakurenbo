@@ -302,7 +302,6 @@ export default function DetectiveBoard({
 
       toggleLink(selectedSuspectIdForAssign, regular.name);
       setUndoAction({ suspectId: selectedSuspectIdForAssign, regularName: regular.name });
-      setSelectedSuspectIdForAssign(null);
     }
   };
 
@@ -1403,8 +1402,8 @@ export default function DetectiveBoard({
 
         {/* 📱 誤爆防止の Undo トースト */}
         {undoAction && (
-          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] glass-panel px-4 py-2.5 rounded-xl border border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] flex items-center gap-3 animate-popover-in">
-            <span className="text-[10px] font-semibold text-[var(--foreground)]">
+          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] glass-panel px-3.5 py-2 rounded-xl border border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] flex items-center gap-2.5 animate-popover-in max-w-[92vw] w-max whitespace-nowrap">
+            <span className="text-[10px] font-semibold text-[var(--foreground)] whitespace-nowrap shrink-0">
               紐付けを更新しました
             </span>
             <button
@@ -1412,13 +1411,13 @@ export default function DetectiveBoard({
                 toggleLink(undoAction.suspectId, undoAction.regularName);
                 setUndoAction(null);
               }}
-              className="px-2.5 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold cursor-pointer transition-all active:scale-95"
+              className="whitespace-nowrap shrink-0 px-2.5 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold cursor-pointer transition-all active:scale-95"
             >
               元に戻す
             </button>
             <button
               onClick={() => setUndoAction(null)}
-              className="text-[var(--text-secondary)] hover:text-[var(--foreground)] cursor-pointer"
+              className="text-[var(--text-secondary)] hover:text-[var(--foreground)] cursor-pointer shrink-0"
             >
               <X size={12} />
             </button>
@@ -1493,18 +1492,21 @@ export default function DetectiveBoard({
                   ) : (
                     <div className="grid grid-cols-2 gap-2 pb-2">
                       {regulars.map(regular => {
-                        const isDocked = suspects.some(s => s.isSolved && (s.realNameGuesses || []).includes(regular.name));
-                        const isLinked = suspects.some(s => !s.isSolved && (s.realNameGuesses || []).includes(regular.name));
+                        const currentSuspect = suspects.find(s => s.id === selectedSuspectIdForAssign);
+                        const isDocked = currentSuspect?.isSolved && (currentSuspect.realNameGuesses || []).includes(regular.name);
+                        const isLinked = !currentSuspect?.isSolved && (currentSuspect?.realNameGuesses || []).includes(regular.name);
                         
                         return (
                           <button
                             key={regular.id}
                             onClick={() => handlePocketClickMobile(regular)}
-                            className="p-3 rounded-2xl glass-card border border-white/5 text-left flex items-center justify-between gap-1.5 transition-all duration-200 cursor-pointer active:scale-95 text-xs font-bold"
-                            style={{
-                              borderColor: isDocked ? "rgba(16, 185, 129, 0.3)" : undefined,
-                              background: isDocked ? "rgba(16, 185, 129, 0.04)" : undefined,
-                            }}
+                            className={`p-3 rounded-2xl glass-card border text-left flex items-center justify-between gap-1.5 transition-all duration-200 cursor-pointer active:scale-95 text-xs font-bold ${
+                              isDocked
+                                ? "border-emerald-500/40 bg-emerald-500/10"
+                                : isLinked
+                                ? "border-[var(--accent-solid)]/40 bg-[var(--accent-solid)]/10"
+                                : "border-white/5"
+                            }`}
                           >
                             <span className="flex items-center gap-1.5 min-w-0">
                               <span 
@@ -1519,7 +1521,7 @@ export default function DetectiveBoard({
                                 <span className="px-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[7px] text-emerald-400 font-extrabold tracking-wide">確定</span>
                               )}
                               {!isDocked && isLinked && (
-                                <span className="px-1 rounded bg-yellow-500/10 border border-yellow-500/20 text-[7px] text-yellow-400 font-extrabold tracking-wide">候補</span>
+                                <span className="px-1 rounded bg-violet-500/10 border border-violet-500/20 text-[7px] text-violet-400 font-extrabold tracking-wide">候補</span>
                               )}
                             </span>
                           </button>
@@ -1528,6 +1530,16 @@ export default function DetectiveBoard({
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* 下部アクションボタン (親指位置で簡単に閉じられる完了ボタン) */}
+              <div className="pt-2 border-t border-white/5 shrink-0">
+                <button
+                  onClick={() => setSelectedSuspectIdForAssign(null)}
+                  className="w-full py-2.5 rounded-xl bg-white/5 border border-white/8 hover:bg-white/10 text-xs font-black text-[var(--foreground)] active:scale-98 transition-all cursor-pointer text-center"
+                >
+                  アサインを完了する (閉じる)
+                </button>
               </div>
             </div>
           </>
